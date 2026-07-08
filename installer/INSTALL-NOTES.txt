@@ -1,0 +1,18 @@
+Aitum Dock Sync installs into OBS Studio and starts your Aitum Multistream
+outputs automatically when you go live.
+
+Requirements
+- OBS Studio 64-bit
+- Aitum Multistream plugin installed and configured
+
+After install
+1. Restart OBS Studio
+2. Open Tools, Scripts and remove aitum_sync.py if it is still listed
+3. Start streaming. Secondary outputs start and stop with the main stream.
+
+Uninstall
+1. Close OBS Studio completely
+2. Open Windows Settings, Apps, Installed apps
+3. Select Aitum Dock Sync, then Uninstall
+   Or use Start menu, Aitum Dock Sync, Uninstall Aitum Dock Sync
+4. Restart OBS Studio

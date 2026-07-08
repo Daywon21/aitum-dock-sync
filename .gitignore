@@ -1,0 +1,13 @@
+.deps/
+build/
+release/
+installer/output/
+plugin/build/
+*.dll
+*.exe
+*.user
+*.aps
+.vs/
+.DS_Store
+CMakeCache.txt
+CMakeFiles/
