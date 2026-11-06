@@ -1,0 +1,191 @@
+{
+ "ctest_filter": "vertical|dock_groups|stream_key|main_only|live_indicator|obs_theme",
+ "steps": [
+  {
+   "name": "PRE stream_key guard (fail-first): source reads stream_key (expect test_plugin_source_never_reads_stream_key FAIL)",
+   "run": "py:tests/test_chunk10_stream_key.py",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\t\t\tconst QString name = output.value(QStringLiteral(\"name\")).toString();\n",
+     "\t\t\tconst QString name = output.value(QStringLiteral(\"name\")).toString();\n\t\t\tconst QString key = output.value(QStringLiteral(\"stream_key\")).toString();\n"
+    ]
+   ]
+  },
+  {
+   "name": "GREEN stream_key guard (expect PASS)",
+   "run": "py:tests/test_chunk10_stream_key.py",
+   "edits": []
+  },
+  {
+   "name": "PRE theme guard (fail-first): dock sets its own style sheet (expect test_dock_source_has_no_custom_style FAIL)",
+   "run": "py:tests/test_chunk11_theme_only.py",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\tnot_found_->setWordWrap(true);\n",
+     "\tnot_found_->setWordWrap(true);\n\tnot_found_->setStyleSheet(QStringLiteral(\"font-size: 11pt;\"));\n"
+    ]
+   ]
+  },
+  {
+   "name": "GREEN theme guard (expect PASS)",
+   "run": "py:tests/test_chunk11_theme_only.py",
+   "edits": []
+  },
+  {
+   "name": "A: vertical flag ignored, Main names listed as Vertical (expect groups/new_vertical/main_only... FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\t\t\tif (!output.value(QStringLiteral(\"vertical\")).toBool(false))\n\t\t\t\tcontinue;\n",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "B: ticked Vertical outputs not started (expect start_starts_ticked_vertical + stream_key_never FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/plugin-main.cpp",
+     "\t\tfor (const QString &name : vertical_outputs)\n\t\t\tif (g_picks && g_picks->is_picked(profile, vertical_pick_key(name)))\n\t\t\t\tpending.push_back({name, true});\n",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "C: Vertical outputs not stopped (expect stop_stops_all_vertical + stream_key_never FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/plugin-main.cpp",
+     "\t\tfor (const QString &name : vertical_outputs)\n\t\t\tpending.push_back({name, true});\n",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "D: live Vertical toggle sent to Main (expect vertical_tick_while_live FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\t\tif (vertical)\n\t\t\tset_vertical_output(output, checked);",
+     "\t\tif (false)\n\t\t\tset_vertical_output(output, checked);"
+    ]
+   ]
+  },
+  {
+   "name": "E: Vertical picks saved under the plain name (expect groups/tick_live/offline/new_vertical FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\treturn QStringLiteral(\"[Vertical] \") + output_name;",
+     "\treturn output_name;"
+    ]
+   ]
+  },
+  {
+   "name": "F: obs_output reference leaked (expect start/stop/tick refs FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\tif (output)\n\t\tobs_output_release(output);\n\n\tif (start == was_active)",
+     "\tif (start == was_active)"
+    ]
+   ]
+  },
+  {
+   "name": "G: vendor response logged (expect stream_key_never_read_or_logged FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\tQStringList names;\n\tif (response->status_code",
+     "\tblog(LOG_INFO, \"[aitum-dock-sync] get_outputs: %s\", response->response_data ? response->response_data : \"\");\n\tQStringList names;\n\tif (response->status_code"
+    ]
+   ]
+  },
+  {
+   "name": "H: Vertical group always shown (expect main_only_without_vertical_api FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "vertical_group_->setHidden(vertical.isEmpty());",
+     "vertical_group_->setHidden(false);"
+    ]
+   ]
+  },
+  {
+   "name": "I: LIVE label not connected to the stream button (expect live_indicator FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\t\tlive_connections_.push_back(\n\t\t\tQObject::connect(button, &QPushButton::toggled, live, [live](bool on) { live->setHidden(!on); }));\n",
+     "\t\t(void)live;\n"
+    ]
+   ]
+  },
+  {
+   "name": "J: LIVE not re-bound after Multistream rebuilds a group box (expect live_indicator FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\t\thook_aitum_dock(find_aitum_multistream_dock());\n\tbind_live();\n",
+     "\t\thook_aitum_dock(find_aitum_multistream_dock());\n\tif (main_changed || vertical_changed)\n\t\tbind_live();\n"
+    ]
+   ]
+  },
+  {
+   "name": "K: not-found label not text-muted (expect obs_theme_classes FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\tnot_found_->setProperty(\"class\", \"text-muted\");\n",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "L: outer margins 4 instead of OBS 1 (expect obs_theme_classes FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "constexpr int kOuterSide = 1;",
+     "constexpr int kOuterSide = 4;"
+    ]
+   ]
+  },
+  {
+   "name": "M: custom font on checkboxes (expect obs_theme_classes FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\t\tauto *box = new QCheckBox(name, row);\n",
+     "\t\tauto *box = new QCheckBox(name, row);\n\t\tbox->setFont(box->font());\n"
+    ]
+   ]
+  },
+  {
+   "name": "N: LIVE label classes changed (expect obs_theme_classes FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "live->setProperty(\"class\", \"text-small text-bold text-danger\");",
+     "live->setProperty(\"class\", \"text-danger\");"
+    ]
+   ]
+  }
+ ]
+}

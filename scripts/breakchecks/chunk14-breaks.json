@@ -1,0 +1,27 @@
+{
+ "ctest_filter": "vertical|untick_while_connecting|stream_key|main_only|dock_groups",
+ "steps": [
+  {
+   "name": "D (rerun): hand-started Verticals stopped at the start pass (expect hand_started_vertical + stream_stop_stops_all FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/plugin-main.cpp",
+     "} else if (!g_vertical_live_at_start.contains(name)) {",
+     "} else if (true) {"
+    ]
+   ]
+  },
+  {
+   "name": "T: hand-started Vertical not ticked (expect hand_started_vertical FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/plugin-main.cpp",
+     "\t\t\t\tg_picks->set_picked(profile, vertical_pick_key(name), true);\n",
+     ""
+    ]
+   ]
+  }
+ ]
+}

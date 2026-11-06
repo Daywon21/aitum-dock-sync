@@ -7,7 +7,7 @@ $PackageRoot = Join-Path $Root "release\Package"
 $InstallerDir = Join-Path $Root "installer"
 $Iss = Join-Path $InstallerDir "aitum-dock-sync.iss"
 $VersionFile = Join-Path $Root "VERSION"
-$Version = if (Test-Path $VersionFile) { (Get-Content $VersionFile -Raw).Trim() } else { "1.0.0" }
+$Version = if (Test-Path $VersionFile) { (Get-Content $VersionFile -Raw).Trim() } else { "2.0.0" }
 
 $IsccCandidates = @(
     "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
@@ -26,12 +26,14 @@ if (-not (Test-Path (Join-Path $PluginRoot "build\aitum-dock-sync.dll"))) {
 }
 
 Write-Host "Staging package..."
-$PluginOut = Join-Path $PackageRoot "obs-plugins\64bit"
-$DataOut = Join-Path $PackageRoot "data\obs-plugins\aitum-dock-sync\locale"
+if (Test-Path $PackageRoot) {
+    Remove-Item -Recurse -Force $PackageRoot
+}
+$PluginOut = Join-Path $PackageRoot "aitum-dock-sync"
+$DataOut = Join-Path $PluginOut "data"
 New-Item -ItemType Directory -Force -Path $PluginOut | Out-Null
-New-Item -ItemType Directory -Force -Path $DataOut | Out-Null
 Copy-Item -Force (Join-Path $PluginRoot "build\aitum-dock-sync.dll") (Join-Path $PluginOut "aitum-dock-sync.dll")
-Copy-Item -Force (Join-Path $PluginRoot "data\locale\en-US.ini") (Join-Path $DataOut "en-US.ini")
+Copy-Item -Recurse -Force (Join-Path $PluginRoot "data") $DataOut
 
 Write-Host "Compiling installer..."
 $OutputDir = Join-Path $InstallerDir "output"
@@ -48,3 +50,4 @@ if (-not (Test-Path $Setup)) {
 
 Write-Host ""
 Write-Host "Installer ready: $Setup" -ForegroundColor Green
+Write-Host "Users run that Setup.exe. No Install.cmd needed."

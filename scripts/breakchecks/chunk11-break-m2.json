@@ -1,0 +1,16 @@
+{
+ "ctest_filter": "obs_theme",
+ "steps": [
+  {
+   "name": "M2: real custom font (11 pt) on checkboxes (expect obs_theme_classes FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\t\tauto *box = new QCheckBox(name, row);\n",
+     "\t\tauto *box = new QCheckBox(name, row);\n\t\tQFont custom = box->font();\n\t\tcustom.setPointSize(11);\n\t\tbox->setFont(custom);\n"
+    ]
+   ]
+  }
+ ]
+}

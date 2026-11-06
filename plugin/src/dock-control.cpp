@@ -13,11 +13,6 @@
 #include <QPushButton>
 #include <QWidget>
 
-namespace {
-
-constexpr auto kAitumDockObjectName = "AitumMultistreamDock";
-constexpr auto kAitumStreamButtonObjectName = "canvasStream";
-
 QString current_obs_profile_name()
 {
 	char *profile = obs_frontend_get_current_profile();
@@ -29,11 +24,20 @@ QString current_obs_profile_name()
 	return profile_name;
 }
 
+namespace {
+
+constexpr auto kAitumDockObjectName = "AitumMultistreamDock";
+constexpr auto kAitumStreamButtonObjectName = "canvasStream";
+
+QString aitum_config_path()
+{
+	return QDir(qEnvironmentVariable("APPDATA"))
+		.filePath(QStringLiteral("obs-studio/plugin_config/aitum-multistream/config.json"));
+}
+
 QJsonObject load_aitum_config()
 {
-	const QString path = QDir(qEnvironmentVariable("APPDATA"))
-				 .filePath(QStringLiteral(
-					 "obs-studio/plugin_config/aitum-multistream/config.json"));
+	const QString path = aitum_config_path();
 
 	QFile file(path);
 	if (!file.open(QIODevice::ReadOnly)) {
@@ -116,6 +120,30 @@ QStringList load_aitum_output_names()
 	blog(LOG_WARNING, "[aitum-dock-sync] No Aitum profile match for '%s'.",
 	     profile_name.toUtf8().constData());
 	return {};
+}
+
+QString aitum_config_file_path()
+{
+	return aitum_config_path();
+}
+
+QDockWidget *find_aitum_multistream_dock()
+{
+	return find_aitum_dock();
+}
+
+QPushButton *find_aitum_stream_button(const QString &output_name)
+{
+	QDockWidget *dock = find_aitum_dock();
+	if (!dock)
+		return nullptr;
+	auto *group = dock->findChild<QGroupBox *>(output_name, Qt::FindChildrenRecursively);
+	return group ? group->findChild<QPushButton *>(QString::fromUtf8(kAitumStreamButtonObjectName)) : nullptr;
+}
+
+bool aitum_multistream_found()
+{
+	return QFile::exists(aitum_config_path()) && find_aitum_dock() != nullptr;
 }
 
 bool click_aitum_output_button(const QString &output_name, bool start)

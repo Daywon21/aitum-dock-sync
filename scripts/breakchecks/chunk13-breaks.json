@@ -1,0 +1,60 @@
+{
+ "ctest_filter": "vertical|untick_while_connecting|stream_key|main_only|dock_groups",
+ "steps": [
+  {
+   "name": "A: no stop when a connecting output goes live (expect auto_started + untick_while_connecting + stop_pass FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\t\tentry.connecting = false;\n\t\tif (entry.want_stopped)\n\t\t\tstop_now(name);\n",
+     "\t\tentry.connecting = false;\n"
+    ]
+   ]
+  },
+  {
+   "name": "B: connecting read as idle (expect auto_started + already_connecting + untick_while_connecting + stop_pass FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\treturn g_entries.value(name).connecting ? State::Connecting : State::Idle;",
+     "\treturn State::Idle;"
+    ]
+   ]
+  },
+  {
+   "name": "C: unticked auto-started Verticals not stopped at the start pass (expect auto_started + already_connecting FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/plugin-main.cpp",
+     "\t\t\t} else if (!g_vertical_live_at_start.contains(name)) {\n\t\t\t\tpending.push_back({name, true, false, true});\n\t\t\t}\n",
+     "\t\t\t}\n"
+    ]
+   ]
+  },
+  {
+   "name": "D: hand-started Verticals stopped at the start pass too (expect locked test_stream_stop_stops_all_vertical_outputs FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/plugin-main.cpp",
+     "} else if (!g_vertical_live_at_start.contains(name)) {",
+     "} else if (true) {"
+    ]
+   ]
+  },
+  {
+   "name": "E: new output not treated as connecting (expect auto_started + already_connecting FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/vertical-control.cpp",
+     "\t\tentry.connecting = !active && entry.known_null;",
+     "\t\tentry.connecting = false;"
+    ]
+   ]
+  }
+ ]
+}

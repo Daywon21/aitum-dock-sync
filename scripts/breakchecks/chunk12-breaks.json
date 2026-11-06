@@ -1,0 +1,54 @@
+{
+ "ctest_filter": "rows_match_audio_mixer|style_dump_logged_once|obs_theme",
+ "steps": [
+  {
+   "name": "PRE dump test (fail-first, with objectName lines): dump never written (expect test_style_dump_logged_once FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\tstyle_dumped_ = true;\n\tlog_style_dump(this);\n",
+     "\tstyle_dumped_ = true;\n"
+    ]
+   ]
+  },
+  {
+   "name": "GREEN Chunk 12 tests (expect both PASS)",
+   "run": "ct",
+   "edits": []
+  },
+  {
+   "name": "A: rows without text-small (expect rows_match + style_dump FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\t\tbox->setProperty(\"class\", \"text-small\");\n",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "B: dump not limited to once (expect style_dump FAIL)",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/platform-dock.cpp",
+     "\tstyle_dumped_ = true;\n\tlog_style_dump(this);\n",
+     "\tlog_style_dump(this);\n"
+    ]
+   ]
+  },
+  {
+   "name": "C: wrong font comparison (expect style_dump FAIL: match 'no')",
+   "run": "ct",
+   "edits": [
+    [
+     "plugin/src/style-dump.cpp",
+     "box->font().pointSizeF() != mixer_label->font().pointSizeF()",
+     "box->font().pointSizeF() == mixer_label->font().pointSizeF()"
+    ]
+   ]
+  }
+ ]
+}
